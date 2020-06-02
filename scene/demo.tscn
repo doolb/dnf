@@ -1,0 +1,25 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://script/core/GameManager.cs" type="Script" id=1]
+[ext_resource path="res://script/test/test_coroutine.cs" type="Script" id=2]
+[ext_resource path="res://script/test/test_hocon.cs" type="Script" id=4]
+
+[node name="GameManager" type="Node2D"]
+script = ExtResource( 1 )
+__meta__ = {
+"_editor_description_": "debug=Log"
+}
+
+[node name="Test" type="Node" parent="."]
+
+[node name="test_coroutine" type="Node" parent="Test"]
+script = ExtResource( 2 )
+
+[node name="test_hocon" type="Node" parent="Test"]
+script = ExtResource( 4 )
+__meta__ = {
+"_editor_description_": "debug=1
+debug=off
+debug.level = 1
+debug.on = false"
+}
