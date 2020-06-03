@@ -4,7 +4,7 @@ namespace Core
 {
     public static class Debug
     {
-        static Debug(){
+        static Debug() {
             level = Level.Log;
         }
         const string nullString = "Null";
@@ -17,6 +17,9 @@ namespace Core
             Error = 1,  // 001
             Off = 0
         }
+
+        public delegate bool DebugCallback(Level level, string msg);
+        public static DebugCallback OnDebugCallback;
         public static Level level { get; set; }
 
         public static bool isDebugBuild { get { return OS.IsDebugBuild(); } }
@@ -26,20 +29,26 @@ namespace Core
                 return;
             if (level < Level.Log)
                 return;
-            GD.Print("Log: " + (obj != null ? obj.ToString() : nullString));
+            var msg = "Log: " + Time.time + " " + (obj != null ? obj.ToString() : nullString);
+            if (OnDebugCallback == null || OnDebugCallback(Level.Log, msg))
+                GD.Print(msg);
         }
 
         public static void LogWarning(object obj) {
             if (level < Level.Warning)
                 return;
-            GD.Print("Warn: " + (obj != null ? obj.ToString() : nullString));
+            var msg = "Warn: " + Time.time + " " + (obj != null ? obj.ToString() : nullString);
+            if (OnDebugCallback == null || OnDebugCallback(Level.Warning, msg))
+                GD.Print(msg);
         }
 
 
         public static void LogError(object obj) {
             if (level < Level.Error)
                 return;
-            GD.PrintErr("Error: " + (obj != null ? obj.ToString() : nullString));
+            var msg = "Error: " + Time.time + " " + (obj != null ? obj.ToString() : nullString);
+            if (OnDebugCallback == null || OnDebugCallback(Level.Error, msg))
+                GD.PrintErr(msg);
         }
 
         #region string extension
