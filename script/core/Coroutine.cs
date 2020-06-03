@@ -7,8 +7,8 @@ namespace Core
 {
     public class Coroutine : Node
     {
+        public static Coroutine Instance => GameManager.Instance.Get<Coroutine>();
         public override void _EnterTree() {
-            Name = nameof(Coroutine);
             Debug.Log(nameof(Coroutine) + " start");
         }
 
@@ -24,6 +24,10 @@ namespace Core
                 }
 
                 CustomYieldInstruction yielder = routines[i].Value.Current as CustomYieldInstruction;
+                if (yielder == null) {
+                    stop(i);
+                    continue;
+                }
                 if (yielder.keepWaiting)
                     continue;
                 bool yielded = yielder.MoveNext();
@@ -62,7 +66,7 @@ namespace Core
         // stop routine on node
         // if routine is null, then stop all on node
         public void stop(Node node, IEnumerator routine) {
-            if(node == null && routine == null) // what
+            if (node == null && routine == null) // what
                 return;
             Debug.Log("stop coroutine : " + node.Name + " " + routine);
             for (int i = 0; i < routines.Count; i++) {
@@ -73,12 +77,24 @@ namespace Core
             }
         }
         // method for no node base
-        public void start(IEnumerator _rt){
+        public void start(IEnumerator _rt) {
             start(null, _rt);
         }
-        public void stop(IEnumerator _rt){
+        public void stop(IEnumerator _rt) {
             stop(null, _rt);
         }
+
+        #region multi thread 
+        public async void StartOnTask(IEnumerator rt) {
+            await System.Threading.Tasks.Task.Run(() =>
+            {
+                while (rt.MoveNext()) { // is need wait ???
+                    var obj = rt.Current;
+                }
+            }).ConfigureAwait(false);
+        }
+
+        #endregion
     }
 
     public static class CoroutineExtension

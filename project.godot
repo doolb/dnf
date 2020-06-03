@@ -19,10 +19,6 @@ config/name="dnf"
 run/main_scene="res://scene/demo.tscn"
 config/icon="res://icon.png"
 
-[editor_plugins]
-
-enabled=PoolStringArray( "gameobject_editor" )
-
 [rendering]
 
 environment/default_environment="res://default_env.tres"
