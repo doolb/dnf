@@ -85,12 +85,13 @@ namespace Core
         }
 
         #region multi thread 
-        public async void StartOnTask(IEnumerator rt) {
+        public async void StartOnTask(System.Action callback) {
             await System.Threading.Tasks.Task.Run(() =>
             {
-                while (rt.MoveNext()) { // is need wait ???
-                    var obj = rt.Current;
-                }
+                callback();
+                //                while (rt.MoveNext()) { // is need wait ???
+                //                    var obj = rt.Current;
+                //                }
             }).ConfigureAwait(false);
         }
 

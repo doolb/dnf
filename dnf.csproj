@@ -56,12 +56,14 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="script\**\*.cs" />
     <Compile Include="addons\**\*.cs" />
+    <Compile Include="npk\**\*.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Hocon.Configuration">
       <Version>2.0.3</Version>
     </PackageReference>
     <PackageReference Include="System.IO.Compression"/>
+    <PackageReference Include="System.Drawing.Common"/>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -17,6 +17,8 @@ public class fps : Label
     // Called every frame. 'delta' is the elapsed time since the previous frame.
     public override void _Process(float delta)
     {
-        Text = GameManager.Instance.Get<Time>().ToString() + delta.ToString();
+        var mem = $"mem : {OS.GetStaticMemoryUsage()}/{OS.GetStaticMemoryPeakUsage()} -- {OS.GetDynamicMemoryUsage()} \n";
+        var cs = $"code : {GC.GetTotalMemory(false)}";
+        Text = GameManager.Instance.Get<Time>().ToString() + delta.ToString() +"\n" + mem + cs;
     }
 }

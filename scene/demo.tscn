@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://script/core/GameManager.cs" type="Script" id=1]
 [ext_resource path="res://script/ext/fps.cs" type="Script" id=2]
 [ext_resource path="res://script/game/Main.cs" type="Script" id=3]
 [ext_resource path="res://script/ext/debug_view.cs" type="Script" id=4]
+[ext_resource path="res://script/test/npk/test_npk.cs" type="Script" id=5]
 
 [node name="GameManager" type="Node2D"]
 script = ExtResource( 1 )
@@ -39,12 +40,57 @@ __meta__ = {
 "_editor_description_": "max=3"
 }
 
-[node name="Control" type="Control" parent="Main"]
+[node name="NpkViewer" type="Control" parent="Main"]
 anchor_left = 0.873
 anchor_right = 0.965
 margin_left = -893.952
 margin_right = -412.16
 margin_bottom = 448.0
+script = ExtResource( 5 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="fileBtn" type="Button" parent="Main/NpkViewer"]
+margin_left = 80.0
+margin_top = 56.0
+margin_right = 156.0
+margin_bottom = 96.0
+text = "open file"
+
+[node name="image" type="TextureRect" parent="Main/NpkViewer"]
+margin_left = 88.0
+margin_top = 328.0
+margin_right = 368.0
+margin_bottom = 456.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="dialog" type="FileDialog" parent="Main/NpkViewer"]
+margin_right = 216.0
+margin_bottom = 130.15
+rect_min_size = Vector2( 300, 200 )
+window_title = "打开单个文件"
+resizable = true
+mode = 0
+current_dir = "res://sprite"
+current_path = "res://sprite/"
+
+[node name="albumList" type="ItemList" parent="Main/NpkViewer"]
+margin_left = 80.0
+margin_top = 112.0
+margin_right = 272.0
+margin_bottom = 304.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="spriteList" type="ItemList" parent="Main/NpkViewer"]
+margin_left = 296.0
+margin_top = 16.0
+margin_right = 736.0
+margin_bottom = 304.0
 __meta__ = {
 "_edit_use_anchors_": false
 }

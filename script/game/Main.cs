@@ -12,7 +12,7 @@ namespace Game
             Debug.Log(nameof(Main) + " start");
             LoadCfg(EditorDescription);
             
-            ConfigManager.Instance.LoadConfigRaw("script.zip", new ScriptConfigLoader());
+            //ConfigManager.Instance.LoadConfig("script.zip", new ScriptConfigLoader());
         }
 
         public void LoadCfg(string str) {
