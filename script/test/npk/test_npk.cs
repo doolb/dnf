@@ -42,6 +42,7 @@ public class test_npk : Control
         selectAlbum = 0;
         if (albums.Count > 0)
             setImage(0);
+        GC.Collect();
     }
 
     int selectSprite;
@@ -51,18 +52,25 @@ public class test_npk : Control
         selectAlbum = index;
         var album = albums[selectAlbum];
         for (int i = 0; i < album.Count; i++) {
-            spriteList.AddItem($"{album.List[i].Index} {album.List[i].Type} {album.List[i].Height} {album.List[i].Width} {album.List[i].FrameSize} {album.List[i].Location}");
+            spriteList.AddItem($"{album.List[i].Index} {album.List[i].Version} {album.List[i].Type} {album.List[i].Height} {album.List[i].Width} {album.List[i].FrameSize} {album.List[i].Location}");
         }
         if (album.Count > 0)
             setImage(0);
     }
 
     void setImage(int index) {
-        selectSprite = index;
+        selectSprite = Mathf.Min(index, albums[selectAlbum].List.Count);
         image.Texture?.Dispose();
         ImageTexture tex = new ImageTexture();
         Debug.Log($"select : {dialog.CurrentPath} {selectAlbum} {selectSprite}");
-        tex.CreateFromImage(albums[selectAlbum].List[selectSprite].Picture.ConvertToImage());
+        var godotText = albums[selectAlbum].List[selectSprite].Picture as GodotTexture;
+        if (godotText != null) {
+            tex.CreateFromImage(godotText.Image);
+        }
+        else {
+            var bmptex = albums[selectAlbum].List[selectSprite].Picture as BitmapTexture;
+            tex.CreateFromImage(bmptex.Image.ConvertToImage());
+        }
         image.Texture = tex;
     }
 }

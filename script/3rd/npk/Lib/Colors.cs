@@ -4,8 +4,10 @@ using System.IO;
 using System.Linq;
 using ExtractorSharp.Core.Model;
 
-namespace ExtractorSharp.Core.Lib {
-    public static class Colors {
+namespace ExtractorSharp.Core.Lib
+{
+    public static class Colors
+    {
         public const int Argb1555 = 0x0e;
         public const int Argb4444 = 0x0f;
         public const int Argb8888 = 0X10;
@@ -62,9 +64,49 @@ namespace ExtractorSharp.Core.Lib {
         }
 
         public static byte[] ReadColor(Stream stream, ColorBits bits) {
-            return ReadColor(stream, (int) bits);
+            return ReadColor(stream, (int)bits);
         }
 
+        public static void ReadColorRgba(Stream stream, int bits, byte[] target, int offset) {
+            byte[] bs;
+            if (bits == Argb8888) {
+                stream.Read(4, out bs);
+                if (bs[2] > 0 || bs[1] > 0 || bs[0] > 0 || bs[3] > 0) {
+                    target[offset + 0] = bs[2]; // r
+                    target[offset + 1] = bs[1]; // g
+                    target[offset + 2] = bs[0]; // b 
+                    target[offset + 3] = bs[3]; // a
+                }
+                return;
+            }
+            byte a = 0;
+            byte r = 0;
+            byte g = 0;
+            byte b = 0;
+            stream.Read(2, out bs);
+            switch (bits) {
+                case Argb1555:
+                    a = (byte)(bs[1] >> 7);
+                    r = (byte)((bs[1] >> 2) & 0x1f);
+                    g = (byte)((bs[0] >> 5) | ((bs[1] & 3) << 3));
+                    b = (byte)(bs[0] & 0x1f);
+                    a = (byte)(a * 0xff);
+                    r = (byte)((r << 3) | (r >> 2));
+                    g = (byte)((g << 3) | (g >> 2));
+                    b = (byte)((b << 3) | (b >> 2));
+                    break;
+                case Argb4444:
+                    a = (byte)(bs[1] & 0xf0);
+                    r = (byte)((bs[1] & 0xf) << 4);
+                    g = (byte)(bs[0] & 0xf0);
+                    b = (byte)((bs[0] & 0xf) << 4);
+                    break;
+            }
+            target[offset + 3] = a;
+            target[offset + 2] = b;
+            target[offset + 1] = g;
+            target[offset + 0] = r;
+        }
 
 
         /// <summary>
@@ -86,20 +128,20 @@ namespace ExtractorSharp.Core.Lib {
             var right = 0;
             switch (bits) {
                 case ColorBits.ARGB_1555:
-                    a = (byte) (a >> 7);
-                    r = (byte) (r >> 3);
-                    g = (byte) (g >> 3);
-                    b = (byte) (b >> 3);
-                    left = (byte) (((g & 7) << 5) | b);
-                    right = (byte) ((a << 7) | (r << 2) | (g >> 3));
+                    a = (byte)(a >> 7);
+                    r = (byte)(r >> 3);
+                    g = (byte)(g >> 3);
+                    b = (byte)(b >> 3);
+                    left = (byte)(((g & 7) << 5) | b);
+                    right = (byte)((a << 7) | (r << 2) | (g >> 3));
                     break;
                 case ColorBits.ARGB_4444:
                     left = g | (b >> 4);
                     right = a | (r >> 4);
                     break;
             }
-            stream.WriteByte((byte) left);
-            stream.WriteByte((byte) right);
+            stream.WriteByte((byte)left);
+            stream.WriteByte((byte)right);
         }
 
         /// <summary>
@@ -109,7 +151,7 @@ namespace ExtractorSharp.Core.Lib {
         /// <param name="color"></param>
         /// <param name="bits"></param>
         public static void WriteColor(this Stream stream, Color color, ColorBits bits) {
-            byte[] data = {color.B, color.G, color.R, color.A};
+            byte[] data = { color.B, color.G, color.R, color.A };
             WriteColor(stream, data, bits);
         }
 
@@ -132,7 +174,7 @@ namespace ExtractorSharp.Core.Lib {
         public static void WritePalette(Stream stream, IEnumerable<Color> table) {
             var list = table.ToList();
             foreach (var color in list) {
-                var data = new[] {color.R, color.G, color.B, color.A};
+                var data = new[] { color.R, color.G, color.B, color.A };
                 stream.Write(data);
             }
         }

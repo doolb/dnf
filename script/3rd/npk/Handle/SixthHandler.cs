@@ -9,7 +9,7 @@ namespace ExtractorSharp.Core.Handle {
     public class SixthHandler : SecondHandler {
         public SixthHandler(Album album) : base(album) { }
 
-        public override Bitmap ConvertToBitmap(Sprite entity) {
+        public override ITexture ConvertToBitmap(Sprite entity) {
             var data = entity.Data;
             var size = entity.Width * entity.Height;
             if (entity.Type == ColorBits.ARGB_1555 && entity.CompressMode == CompressMode.ZLIB) {
@@ -22,7 +22,7 @@ namespace ExtractorSharp.Core.Handle {
                         }
                         data = os.ToArray();
                     }
-                    return Bitmaps.FromArray(data, entity.Size);
+                    return TextureUitls.Instance.FromArray(data, entity.Size);
                 }
             }
             return base.ConvertToBitmap(entity);

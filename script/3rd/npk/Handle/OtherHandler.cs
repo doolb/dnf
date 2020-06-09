@@ -16,7 +16,7 @@ namespace ExtractorSharp.Core.Handle {
         }
 
 
-        public override Bitmap ConvertToBitmap(Sprite entity) {
+        public override ITexture ConvertToBitmap(Sprite entity) {
             return null;
         }
 

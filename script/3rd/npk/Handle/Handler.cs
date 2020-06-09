@@ -46,7 +46,7 @@ namespace ExtractorSharp.Core.Handle {
         /// </summary>
         /// <param name="entity"></param>
         /// <returns></returns>
-        public abstract Bitmap ConvertToBitmap(Sprite entity);
+        public abstract ITexture ConvertToBitmap(Sprite entity);
 
         /// <summary>
         ///     将图片转换为字节集

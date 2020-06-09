@@ -15,20 +15,21 @@ namespace ExtractorSharp.Core.Handle {
         public FifthHandler(Album album) : base(album) { }
 
 
-        public override Bitmap ConvertToBitmap(Sprite entity) {
+        public override ITexture ConvertToBitmap(Sprite entity) {
             if (entity.Type < ColorBits.LINK && entity.Length > 0) {
                 return base.ConvertToBitmap(entity);
             }
             if (!_map.ContainsKey(entity.Index)) {
-                return new Bitmap(1, 1);
+                return TextureUitls.Instance.Empty;
             }
             var index = _map[entity.Index];
             var dds = index.Texture;
-            var bmp = dds.Pictrue.Clone(index.Rectangle, PixelFormat.DontCare);
-            if (index.Top != 0) {
-                bmp.RotateFlip(RotateFlipType.Rotate90FlipXY);
-            }
-            return bmp;
+            return dds.Pictrue;
+            //var bmp = dds.Pictrue.Clone(index.Rectangle, PixelFormat.DontCare);
+            //if (index.Top != 0) {
+            //    bmp.RotateFlip(RotateFlipType.Rotate90FlipXY);
+            //}
+            //return bmp;
         }
 
         public override byte[] ConvertToByte(Sprite entity) {

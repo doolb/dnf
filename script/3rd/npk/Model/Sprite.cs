@@ -6,7 +6,7 @@ using ExtractorSharp.Json.Attr;
 namespace ExtractorSharp.Core.Model {
     public class Sprite {
         [LSIgnore]
-        private Bitmap _image;
+        private ITexture _image;
 
         /// <summary>
         ///     帧域宽高
@@ -77,7 +77,7 @@ namespace ExtractorSharp.Core.Model {
         ///     贴图内容
         /// </summary>
         [LSIgnore]
-        public Bitmap Picture {
+        public ITexture Picture {
             get {
                 if (Type == ColorBits.LINK) {
                     return Target?.Picture;
@@ -141,81 +141,7 @@ namespace ExtractorSharp.Core.Model {
         public void Load() {
             _image = Parent.ConvertToBitmap(this); //使用父容器
         }
-
-        /// <summary>
-        ///     替换贴图
-        /// </summary>
-        /// <param name="type"></param>
-        /// <param name="isAdjust"></param>
-        /// <param name="bmp"></param>
-        public void ReplaceImage(ColorBits type, bool isAdjust, Bitmap bmp) {
-            if (bmp == null) {
-                return;
-            }
-            Picture = bmp;
-            Target = null;
-            Type = type == ColorBits.UNKNOWN ? Type : type;
-            if (type == ColorBits.UNKNOWN) {
-                if (Type == ColorBits.LINK) {
-                    type = ColorBits.ARGB_1555;
-                } else if (Version != ImgVersion.Ver5 && Type > ColorBits.LINK) {
-                    type = Type - 4;
-                } else {
-                    type = Type;
-                }
-            }
-            Type = type;
-            if (isAdjust) {
-                X += bmp.Width - Size.Width;
-                Y += bmp.Height - Size.Height;
-            }
-            Size = bmp.Size;
-            if (FrameHeight < bmp.Height) {
-                FrameHeight = bmp.Height;
-            }
-            if (FrameWidth < bmp.Width) {
-                FrameWidth = bmp.Width;
-            }
-            if (Width * Height > 1) {
-                CompressMode = CompressMode.ZLIB;
-            }
-        }
-
-
-        /// <summary>
-        ///     裁剪画布透明部分
-        /// </summary>
-        public void TrimImage() {
-            if (Type == ColorBits.LINK || CompressMode == CompressMode.NONE) {
-                return;
-            }
-            if (Picture == null) {
-                return;
-            }
-            var rct = Picture.Scan();
-            var image = new Bitmap(rct.Width, rct.Height);
-            var g = Graphics.FromImage(image);
-            var empty = new Rectangle(Point.Empty, rct.Size);
-            g.DrawImage(Picture, empty, rct, GraphicsUnit.Pixel);
-            g.Dispose();
-            Size = rct.Size;
-            Location = Location.Add(rct.Location);
-            Picture = image;
-        }
-
-        /// <summary>
-        ///     画布化
-        /// </summary>
-        /// <param name="target"></param>
-        public void CanvasImage(Rectangle target) {
-            if (Type == ColorBits.LINK) {
-                return;
-            }
-            Picture = Picture.Canvas(target.Add(new Rectangle(Location, Size.Empty)));
-            Size = target.Size;
-            Location = target.Location;
-        }
-
+        
 
         /// <summary>
         ///     数据校正

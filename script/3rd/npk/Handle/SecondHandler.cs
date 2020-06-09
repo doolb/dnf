@@ -8,14 +8,14 @@ namespace ExtractorSharp.Core.Handle {
     public class SecondHandler : Handler {
         public SecondHandler(Album album) : base(album) { }
 
-        public override Bitmap ConvertToBitmap(Sprite entity) {
+        public override ITexture ConvertToBitmap(Sprite entity) {
             var data = entity.Data;
             var type = entity.Type;
             var size = entity.Width * entity.Height * (type == ColorBits.ARGB_8888 ? 4 : 2);
             if (entity.CompressMode == CompressMode.ZLIB) {
                 data = Zlib.Decompress(data, size);
             }
-            return Bitmaps.FromArray(data, entity.Size, type);
+            return TextureUitls.Instance.FromArray(data, entity.Size, type);
         }
 
         public override byte[] ConvertToByte(Sprite entity) {

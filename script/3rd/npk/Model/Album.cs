@@ -29,7 +29,7 @@ namespace ExtractorSharp.Core.Model {
             Handler = Handler.CreateHandler(Version, this);
         }
 
-        public Album(Bitmap[] array) : this() {
+        public Album(ITexture[] array) : this() {
             var sprites = new Sprite[array.Length];
             for (var i = 0; i < array.Length; i++) {
                 sprites[i] = new Sprite(this) {
@@ -241,7 +241,7 @@ namespace ExtractorSharp.Core.Model {
         /// </summary>
         /// <param name="entity"></param>
         /// <returns></returns>
-        public Bitmap ConvertToBitmap(Sprite entity) {
+        public ITexture ConvertToBitmap(Sprite entity) {
             return Handler.ConvertToBitmap(entity);
         }
 

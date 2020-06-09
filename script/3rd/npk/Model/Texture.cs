@@ -7,7 +7,7 @@ namespace ExtractorSharp.Core.Model {
     ///     DDS文件信息
     /// </summary>
     public class Texture {
-        private Bitmap _image;
+        private ITexture _image;
         public int Index { set; get; }
         public int Width { set; get; } = 4;
         public int Height { set; get; } = 4;
@@ -17,16 +17,16 @@ namespace ExtractorSharp.Core.Model {
         public TextureVersion Version { set; get; } = TextureVersion.Dxt1;
         public ColorBits Type { set; get; } = ColorBits.DXT_1;
 
-        public Bitmap Pictrue {
+        public ITexture Pictrue {
             get {
                 if (_image != null) return _image;
                 var data = Zlib.Decompress(Data, FullLength);
                 if (Type < ColorBits.LINK) {
-                    return Bitmaps.FromArray(data, new Size(Width, Height), Type);
+                    return TextureUitls.Instance.FromArray(data, new Size(Width, Height), Type);
                 }
                 var dds = DdsDecoder.Decode(data);
                 data = dds.DdsMipmaps[0].Data;
-                var bmp = Bitmaps.FromArray(data, new Size(Width, Height));
+                var bmp = TextureUitls.Instance.FromArray(data, new Size(Width, Height));
                 return bmp;
             }
             set => _image = value;
