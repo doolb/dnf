@@ -22,15 +22,5 @@ namespace ExtractorSharp.Core
                 type.FullName ?? throw new InvalidOperationException(), true, BindingFlags.Default, null, args, null,
                 null);
         }
-
-        public static Godot.Image ConvertToImage(this Bitmap bmp) {
-            Godot.Image img = new Godot.Image();
-            using (var ms = new MemoryStream()) {
-                bmp.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-                ms.Position = 0;
-                img.LoadPngFromBuffer(ms.ToArray());
-            }
-            return img;
-        }
     }
 }

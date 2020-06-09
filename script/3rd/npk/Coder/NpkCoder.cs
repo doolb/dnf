@@ -77,25 +77,6 @@ namespace ExtractorSharp.Core.Coder {
         }
 
         /// <summary>
-        ///     读取一个贴图
-        /// </summary>
-        /// <param name="stream"></param>
-        /// <param name="entity"></param>
-        /// <returns></returns>
-        public static Bitmap ReadImage(Stream stream, Sprite entity) {
-            var data = new byte[entity.Width * entity.Height * 4];
-            for (var i = 0; i < data.Length; i += 4) {
-                var bits = entity.Type;
-                if (entity.Version == ImgVersion.Ver4 && bits == ColorBits.ARGB_1555) {
-                    bits = ColorBits.ARGB_8888;
-                }
-                Colors.ReadColor(stream, bits, data, i);
-            }
-            return Bitmaps.FromArray(data, entity.Size);
-        }
-
-
-        /// <summary>
         ///     计算NPK的校验码
         /// </summary>
         /// <param name="count"></param>

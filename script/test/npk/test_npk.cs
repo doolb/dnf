@@ -67,10 +67,6 @@ public class test_npk : Control
         if (godotText != null) {
             tex.CreateFromImage(godotText.Image);
         }
-        else {
-            var bmptex = albums[selectAlbum].List[selectSprite].Picture as BitmapTexture;
-            tex.CreateFromImage(bmptex.Image.ConvertToImage());
-        }
         image.Texture = tex;
     }
 }
