@@ -1,5 +1,7 @@
 # DNF
 
+For learning and communication only！
+
 ## Build Tools
 
 * [Godot engine](https://godotengine.org/)
