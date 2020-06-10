@@ -62,7 +62,7 @@ public class test_npk : Control
         selectSprite = Mathf.Min(index, albums[selectAlbum].List.Count);
         image.Texture?.Dispose();
         ImageTexture tex = new ImageTexture();
-        Debug.Log($"select : {dialog.CurrentPath} {selectAlbum} {selectSprite}");
+        Debug.Log($"select : {albums[selectAlbum].Path} {selectAlbum} {selectSprite}");
         var godotText = albums[selectAlbum].List[selectSprite].Picture as GodotTexture;
         if (godotText != null) {
             tex.CreateFromImage(godotText.Image);
