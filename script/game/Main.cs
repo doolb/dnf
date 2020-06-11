@@ -1,6 +1,5 @@
 using Godot;
 using Core;
-using Hocon;
 using System;
 
 namespace Game
@@ -13,13 +12,13 @@ namespace Game
             LoadCfg(EditorDescription);
 
             Coroutine.Instance.StartOnTask(() => ResourceManager.Instance.LoadNpkHeader());
-            //ConfigManager.Instance.LoadConfig("script.zip", new ScriptConfigLoader());
+            ConfigManager.Instance.LoadConfig("config.zip", new ScriptConfigLoader());
         }
 
         public void LoadCfg(string str) {
             if (string.IsNullOrEmpty(str)) return;
-            var cfg = HoconParser.Parse(str ?? "");
-            Debug.level = (Debug.Level)Enum.Parse(typeof(Debug.Level), cfg.GetString("debug", nameof(Debug.Level.Log)));
+            var cfg = new IniParser.Parser.IniDataParser().Parse(str ?? "");
+            Debug.level = (Debug.Level)Enum.Parse(typeof(Debug.Level), cfg.Global["debug"]);
         }
     }
 }

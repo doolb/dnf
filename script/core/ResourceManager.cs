@@ -1,9 +1,11 @@
 using ExtractorSharp.Core.Coder;
 using Godot;
+using IniParser.Model;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO.Compression;
 using System.Text;
 
 namespace Core
@@ -13,15 +15,6 @@ namespace Core
         [DebuggerHidden]
         public static ResourceManager Instance => GameManager.Instance.Get<ResourceManager>();
 
-        public class NpkData
-        {
-            public string filePath;     // npk file
-            public int index;           // npk image index
-            public ExtractorSharp.Core.Model.Album album; // npk image data;
-        }
-        // type, path, data
-        public Dictionary<string, NpkData> allNpkData { get; } = new Dictionary<string, NpkData>();
-
         public void Load(string path, Action<Resource> callback) {
             path = "res://" + path;
             this.StartCoroutine(load(path, callback));
@@ -29,6 +22,7 @@ namespace Core
 
         public override void _ExitTree() {
             allNpkData.Clear();
+            baseConfigs?.Dispose();
         }
 
         public override void _Process(float delta) {
@@ -46,24 +40,22 @@ namespace Core
             callback(res);
             yield return null;
         }
-        public void Load(string path, Action<Godot.File> callback) {
-            var f = new File();
-            var p = "user://" + path;
-            if (OS.IsDebugBuild())
-                p = GameManager.Instance.PrjPath + path;
-            if (!f.FileExists(p)) {
-                Debug.LogError($"file no found: {p}");
-                callback?.Invoke(null);
-                return;
-            }
-            f.Open(p, File.ModeFlags.Read);
-            // this.StartCoroutine(loader._loadRaw(f));
-            Coroutine.Instance.StartOnTask(() => callback?.Invoke(f));
+        public void Load(string path, IConfigLoader loader) {
+            Coroutine.Instance.StartOnTask(() =>
+            {
+                for (int i = 0; i < ResPath.Count; i++) {
+                    var p = System.IO.Path.Combine(ResPath[i], path);
+                    if (loader._loadOK(p))
+                        break;
+                }
+            });
+
+            //var f = new File();
+            //Debug.LogError($"file no found: {path}");
+            //callback?.Invoke(null);
         }
 
-        [Signal]
-        public delegate void load_npk_header_(int @count);
-
+        #region ResPath
 
         // get the folder refer to resource
         // first : res/
@@ -94,8 +86,12 @@ namespace Core
                     return false;
                 var cfg = Hocon.HoconParser.Parse(ss);
                 var res = cfg.GetString("res");
-                if (res.valid() && !paths.Contains(res))
-                    paths.Add(res);
+                if (res.valid() && !paths.Contains(res)) {
+                    if (paths.Count == 0)
+                        paths.Add(res);
+                    else
+                        paths[0] = res;
+                }
                 foreach (var val in cfg.AsEnumerable()) {
                     if (val.Key != "res" && !paths.Contains(val.Key))
                         paths.Add(val.Value.GetString());
@@ -105,12 +101,29 @@ namespace Core
             }
             return false;
         }
+        public List<string> ResPath => resPath ?? (resPath = getResFolder());
+        private List<string> resPath;
 
+        #endregion
+
+        #region  npk sprite file
+
+        public class NpkData
+        {
+            public string filePath;     // npk file
+            public int index;           // npk image index
+            public ExtractorSharp.Core.Model.Album album; // npk image data;
+        }
+        // type, path, data
+        public Dictionary<string, NpkData> allNpkData { get; } = new Dictionary<string, NpkData>();
+
+
+        [Signal]
+        public delegate void load_npk_header_(int @count);
         public void LoadNpkHeader() {
-            var resPath = getResFolder();
-            for (int i = 0; i < resPath.Count; i++) {
-                loadNpkHeader(System.IO.Path.Combine(resPath[i], "sprite"));
-                loadNpkHeader(System.IO.Path.Combine(resPath[i], "ImagePacks2"));
+            for (int i = 0; i < ResPath.Count; i++) {
+                loadNpkHeader(System.IO.Path.Combine(ResPath[i], "sprite"));
+                loadNpkHeader(System.IO.Path.Combine(ResPath[i], "ImagePacks2"));
             }
 
             if (allNpkData.Count == 0) {
@@ -139,5 +152,33 @@ namespace Core
             }
             Debug.Log("load npk header : " + dir + " " + allNpkData.Count);
         }
+        #endregion
+
+        #region config
+        // name, valus
+        public IniData modConfigs { get; private set; }
+        public void LoadModConfig() {
+            for (int i = 1; i < ResPath.Count; i++) {
+                loadNpkHeader(System.IO.Path.Combine(ResPath[i], "config"));
+            }
+        }
+        private void loadModConfig(string dir) {
+            if (!System.IO.Directory.Exists(dir))
+                return;
+            var files = System.IO.Directory.GetFiles(dir, "*.txt");
+            for (int i = 0; i < files.Length; i++) {
+                var cfg = new IniParser.FileIniDataParser().ReadFile(files[i]);
+                if (modConfigs == null)
+                    modConfigs = cfg;
+                else
+                    modConfigs.Merge(cfg);
+            }
+            Debug.Log("load mod config : " + dir + " " + modConfigs.Sections.Count);
+        }
+        public ZipArchive baseConfigs { get; private set; }
+        public void LoadBaseConfig(ZipArchive @z) {
+            baseConfigs = @z;
+        }
+        #endregion
     }
 }

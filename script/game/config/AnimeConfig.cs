@@ -132,9 +132,10 @@ namespace Game.Config
         public Color4D Color;
         public GraphicEffect Effect;
     }
-    public class AnimeConfig : FlatConfig
+    public class AnimeConfig : ResConfig
     {
-        public override string type => "ani";
+        public static readonly string _type = "ani";
+        public override string type => _type;
         public bool Loop { get; private set; }
         public bool Shadow { get; private set; } = true;
         public bool Coord;
@@ -184,7 +185,7 @@ namespace Game.Config
                     break;
                 // frame
                 case "IMAGE":
-                    current_frame.Image = line.RemoveQuotes();
+                    current_frame.Image = line.RemoveQuotes().ToLower();
                     nline = current_reader.ReadLine();
                     current_frame.ImageIdx = nline.ToShort();
                     break;

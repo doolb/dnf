@@ -14,6 +14,9 @@ namespace Core
 
         }
 
+        [Signal]
+        public delegate void load_config_ok();
+
         public override void _Process(float delta) {
             if (OS.IsDebugBuild()) {
                 StringBuilder sb = new StringBuilder();
@@ -29,9 +32,14 @@ namespace Core
         }
         // load config
         Dictionary<string, Dictionary<int, SampleConfig>> sampleConfigDatas = new Dictionary<string, Dictionary<int, SampleConfig>>();
+        public int Sample => sampleConfigDatas.Count;
         Dictionary<string, Dictionary<string, FlatConfig>> flatConfigDatas = new Dictionary<string, Dictionary<string, FlatConfig>>();
+        public int Flat => flatConfigDatas.Count;
+        Dictionary<string, Dictionary<string, ResConfig>> resConfigDatas = new Dictionary<string, Dictionary<string, ResConfig>>();
+        public Dictionary<string, Dictionary<string, ResConfig>> ResCfgs => resConfigDatas;
+        public int Res => resConfigDatas.Count;
         public void LoadConfig(string name, IConfigLoader loader) {
-            ResourceManager.Instance.Load("config/" + name, loader._loadOK);
+            ResourceManager.Instance.Load("config/" + name, loader);
         }
 
         // add config to dic
@@ -75,6 +83,26 @@ namespace Core
                 }
             }
         }
+        public void AddRes(ResConfig _config) {
+            var key = _config.type;
+            if (!resConfigDatas.ContainsKey(key)) {
+                var cfgs = new Dictionary<string, ResConfig>();
+                cfgs.Add(_config.key, _config);
+                resConfigDatas.Add(key, cfgs);
+            }
+            else {
+                var cfgs = resConfigDatas[key];
+                if (cfgs.ContainsKey(_config.key)) {
+
+                    Debug.LogWarning($"replace config : {key} {_config.key}");
+                    cfgs[_config.key] = _config;
+                }
+                else {
+                    //Debug.Log("add config : " + key);
+                    cfgs.Add(_config.key, _config);
+                }
+            }
+        }
         // get sample config by sid
         public T Get<T>(string type, int sid) where T : SampleConfig {
             if (!sampleConfigDatas.ContainsKey(type)) {
@@ -100,6 +128,35 @@ namespace Core
                 return null;
             }
             return (T)cfgs[key];
+        }
+        // get res config by key
+        public T GetRes<T>(string type, string key) where T : ResConfig {
+            if (resConfigDatas.ContainsKey(type)) {
+                var cfgs = resConfigDatas[type];
+                if (cfgs.ContainsKey(key)) {
+                    if (cfgs[key].isinit)
+                        return (T)cfgs[key];
+                }
+            }
+
+            var data = ResourceManager.Instance.baseConfigs.GetEntry(key);
+            if (data == null) {
+                Debug.LogWarning($"config no found: {type} {key}");
+                return null;
+            }
+            Game.ScriptConfigLoader.parseConfig(data, typeof(T));
+            return (T)resConfigDatas[type][key];
+        }
+        public void UnloadRes(ResConfig res) {
+            if(!res.isinit) return;
+            var type = res.type;
+            var key = res.key;
+            if (resConfigDatas.ContainsKey(type)) {
+                var cfgs = resConfigDatas[type];
+                if (cfgs.ContainsKey(key)) {
+                    cfgs.Remove(key);
+                }
+            }
         }
     }
 
@@ -128,12 +185,16 @@ namespace Core
         public virtual void Parse(string data) { }
         public virtual void Parse2(System.IO.StreamReader reader, ref string line) { }
     }
+    public abstract class ResConfig : FlatConfig
+    {
+        public bool isinit = false;
+    }
     #endregion
 
     #region config loader
     public interface IConfigLoader
     {
-        void _loadOK(File file);
+        bool _loadOK(string file);
     }
     #endregion
 }

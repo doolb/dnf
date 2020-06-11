@@ -4,8 +4,8 @@
 [ext_resource path="res://script/ext/fps.cs" type="Script" id=2]
 [ext_resource path="res://script/game/Main.cs" type="Script" id=3]
 [ext_resource path="res://script/ext/debug_view.cs" type="Script" id=4]
-[ext_resource path="res://prefab/test/NpkViewer.tscn" type="PackedScene" id=5]
-[ext_resource path="res://script/test/npk/test_npk_in_res.cs" type="Script" id=6]
+[ext_resource path="res://prefab/test/AnimeViewer.tscn" type="PackedScene" id=5]
+[ext_resource path="res://script/test/npk/test_npk_in_ani.cs" type="Script" id=6]
 
 [node name="GameManager" type="Node2D"]
 script = ExtResource( 1 )
@@ -38,19 +38,12 @@ __meta__ = {
 "_editor_description_": "max=7"
 }
 
-[node name="NpkViewer" parent="Main" instance=ExtResource( 5 )]
-anchor_left = 0.0
-anchor_top = 0.121
-anchor_right = 1.0
-anchor_bottom = 1.0
-margin_left = 0.0
-margin_right = 0.0
-margin_bottom = 0.0
-script = ExtResource( 6 )
-
 [node name="Control" type="Control" parent="Main"]
 margin_right = 40.0
 margin_bottom = 40.0
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
+[node name="AnimeViewer" parent="Main" instance=ExtResource( 5 )]
+script = ExtResource( 6 )
