@@ -30,16 +30,27 @@ __meta__ = {
 }
 
 [node name="debug_view" type="Label" parent="Main"]
-anchor_left = 1.0
-anchor_right = 1.0
-margin_left = -1024.0
-margin_right = -272.0
-margin_bottom = 440.0
+anchor_right = 0.83
+anchor_bottom = 0.311
 script = ExtResource( 4 )
 __meta__ = {
 "_edit_use_anchors_": false,
-"_editor_description_": "max=3"
+"_editor_description_": "max=7"
 }
 
 [node name="NpkViewer" parent="Main" instance=ExtResource( 5 )]
+anchor_left = 0.0
+anchor_top = 0.121
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 0.0
+margin_right = 0.0
+margin_bottom = 0.0
 script = ExtResource( 6 )
+
+[node name="Control" type="Control" parent="Main"]
+margin_right = 40.0
+margin_bottom = 40.0
+__meta__ = {
+"_edit_use_anchors_": false
+}

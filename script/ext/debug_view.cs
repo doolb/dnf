@@ -24,7 +24,7 @@ public class debug_view : Label, IConfigable{
             debugMsgs.Remove(0, msgLen.Dequeue() + 2);
         }
         Text = debugMsgs.ToString();
-        return true;
+        return level > Debug.Level.Log;
     }
 
     public void LoadCfg(string str) {

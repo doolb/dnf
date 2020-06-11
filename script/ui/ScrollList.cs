@@ -14,7 +14,9 @@ namespace UI
             panel.RectSize = this.RectSize;
         }
 
-        protected Action<Control, int> OnItemShow;
+        // control, item index, object index
+        protected Action<Control, int, int> OnItemShow;
+        // return new control
         protected Func<Control> OnItemInit;
         protected Vector2 itemSize;
         protected float itemHeight => itemSize.y + 4;
@@ -24,7 +26,7 @@ namespace UI
         public int PerLineCount { get; set; } = 1;   // count of each line
         protected int startIndex { get; set; }  // index of first show item
         protected int endIndex { get; set; }    // index of last show item
-        public void Init(Func<Control> @init, Action<Control, int> @show, Vector2 @size) {
+        public void Init(Func<Control> @init, Action<Control, int, int> @show, Vector2 @size) {
             this.OnItemInit = @init;
             this.OnItemShow = @show;
             this.itemSize = @size;
@@ -60,7 +62,7 @@ namespace UI
                 }
                 panel.SetProcess(true);
                 panel.Show();
-                OnItemShow((Control)panel.GetChild(i + 1), i + startIndex);
+                OnItemShow((Control)panel.GetChild(i + 1), i + startIndex, i);
             }
             panel.AddChild(new Control()
             {
@@ -78,17 +80,20 @@ namespace UI
             var vbar = GetVScrollbar();
             int firstIndex = (int)(vbar.Value / itemHeight);
             firstIndex = Mathf.Clamp(firstIndex, 0, Mathf.Max(0, ItemCount - maxShowCount));
-            if (lastFisrt == firstIndex) return;
+            (panel.GetChild(0) as Control).RectMinSize = new Vector2(0, firstIndex * itemHeight);
+
+            (panel.GetChild(panel.GetChildCount() - 1) as Control).RectMinSize = new Vector2(0, Mathf.Max(0,
+            ItemCount - firstIndex - maxShowCount) * itemHeight);
+            if (lastFisrt == firstIndex) {
+                return;
+            }
             lastFisrt = firstIndex;
 
-            (panel.GetChild(0) as Control).RectMinSize = new Vector2(0, firstIndex * itemHeight);
 
             for (int i = firstIndex; i < Mathf.Min(ItemCount, firstIndex + maxShowCount); i++) {
                 var idx = i - firstIndex + 1;
-                OnItemShow((Control)panel.GetChild(idx), i);
+                OnItemShow((Control)panel.GetChild(idx), i, idx - 1);
             }
-            (panel.GetChild(panel.GetChildCount() - 1) as Control).RectMinSize = new Vector2(0, Mathf.Max(0,
-            ItemCount - firstIndex - maxShowCount) * itemHeight);
 
             EditorDescription = $"{startIndex} {endIndex} {firstIndex} {base.GetHScroll()} {base.GetVScroll()}";
         }

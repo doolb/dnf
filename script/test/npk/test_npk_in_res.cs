@@ -11,6 +11,7 @@ using System.Linq;
 public class test_npk_in_res : Control
 {
     TextureRect image;
+    List<ButtonBase<Button>> buttons = new List<UI.ButtonBase<Button>>();
     public override void _Ready() {
         image = GetNode(nameof(image)) as TextureRect;
         albumList = GetNode(nameof(albumList)) as ScrollList;
@@ -20,18 +21,22 @@ public class test_npk_in_res : Control
 
         albumList.Init(() =>
         {
-            return new Button() { Align = Button.TextAlign.Left };
-        }, (_c, _i) =>
+            var btn = new Button() { Align = Button.TextAlign.Left };
+            var btnbase = new ButtonBase<Button>(btn);
+            btnbase.onButtonClick += _selectAlbum;
+            buttons.Add(btnbase);
+            return btn;
+        }, (_c, _i, _t) =>
         {
             (_c as Button).Text = npkKeys[_i];
-            (_c as Button).Name = _i.ToString();
+            buttons[_t].Id = _i;
+            _c.Name = _i.ToString();
         }, new Vector2(0, 24));
 
         ResourceManager.Instance.Connect(nameof(ResourceManager.load_npk_header_), this, nameof(_show_npk_list));
     }
 
     ScrollList albumList;
-    int selectAlbum;
     String[] npkKeys;
     void _show_npk_list(int @count) {
         npkKeys = ResourceManager.Instance.allNpkData.Keys.ToArray();
@@ -42,18 +47,20 @@ public class test_npk_in_res : Control
         //    setImage(0);
         //GC.Collect();
     }
+    int selectAlbum;
     int selectSprite;
     ItemList spriteList;
-    //void _selectAlbum(int index) {
-    //    spriteList.Clear();
-    //    selectAlbum = index;
-    //    var album = albums[selectAlbum];
-    //    for (int i = 0; i < album.Count; i++) {
-    //        spriteList.AddItem($"{album.List[i].Index} {album.List[i].Version} {album.List[i].Type} {album.List[i].Height} {album.List[i].Width} {album.List[i].FrameSize} {album.List[i].Location}");
-    //    }
-    //    if (album.Count > 0)
-    //        setImage(0);
-    //}
+    void _selectAlbum(ButtonBase<Button> _button) {
+        $"{_button.Id} {npkKeys[_button.Id]}".log();
+        //    spriteList.Clear();
+        //    selectAlbum = index;
+        //    var album = albums[selectAlbum];
+        //    for (int i = 0; i < album.Count; i++) {
+        //        spriteList.AddItem($"{album.List[i].Index} {album.List[i].Version} {album.List[i].Type} {album.List[i].Height} {album.List[i].Width} {album.List[i].FrameSize} {album.List[i].Location}");
+        //    }
+        //    if (album.Count > 0)
+        //        setImage(0);
+    }
     //
     //void setImage(int index) {
     //    selectSprite = Mathf.Min(index, albums[selectAlbum].List.Count);
