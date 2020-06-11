@@ -17,7 +17,7 @@ namespace Core
         {
             public string filePath;     // npk file
             public int index;           // npk image index
-            public ExtractorSharp.Core.Model.Album sprite; // npk image data;
+            public ExtractorSharp.Core.Model.Album album; // npk image data;
         }
         // type, path, data
         public Dictionary<string, NpkData> allNpkData { get; } = new Dictionary<string, NpkData>();
@@ -94,10 +94,10 @@ namespace Core
                     return false;
                 var cfg = Hocon.HoconParser.Parse(ss);
                 var res = cfg.GetString("res");
-                if (res.valid())
+                if (res.valid() && !paths.Contains(res))
                     paths.Add(res);
-                foreach(var val in cfg.AsEnumerable()){
-                    if(val.Key != "res")
+                foreach (var val in cfg.AsEnumerable()) {
+                    if (val.Key != "res" && !paths.Contains(val.Key))
                         paths.Add(val.Value.GetString());
                 }
                 file.Close();
@@ -129,7 +129,8 @@ namespace Core
                     var npk = new NpkData
                     {
                         filePath = files[i],
-                        index = a
+                        index = a,
+                        album = albums[a]
                     };
 
                     var path = albums[a].Path.Substring("sprite/".Length);

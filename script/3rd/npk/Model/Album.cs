@@ -2,13 +2,16 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using Core;
 using ExtractorSharp.Core.Coder;
 using ExtractorSharp.Core.Handle;
 using ExtractorSharp.Core.Lib;
 using ExtractorSharp.Json.Attr;
 
-namespace ExtractorSharp.Core.Model {
-    public sealed class Album {
+namespace ExtractorSharp.Core.Model
+{
+    public sealed class Album
+    {
         private int _tabindex;
 
         /// <summary>
@@ -32,7 +35,8 @@ namespace ExtractorSharp.Core.Model {
         public Album(ITexture[] array) : this() {
             var sprites = new Sprite[array.Length];
             for (var i = 0; i < array.Length; i++) {
-                sprites[i] = new Sprite(this) {
+                sprites[i] = new Sprite(this)
+                {
                     Index = i,
                     Picture = array[i],
                     CompressMode = CompressMode.ZLIB,
@@ -75,7 +79,8 @@ namespace ExtractorSharp.Core.Model {
         /// </summary>
         public string Path { set; get; } = string.Empty;
 
-        public string Name {
+        public string Name
+        {
             get => Path.GetSuffix();
             set => Path = Path.Replace(Name, value);
         }
@@ -86,8 +91,10 @@ namespace ExtractorSharp.Core.Model {
         public ImgVersion Version { get; set; } = ImgVersion.Ver2;
 
 
-        public List<Color> CurrentTable {
-            get {
+        public List<Color> CurrentTable
+        {
+            get
+            {
                 if (TableIndex > -1 && TableIndex < Tables.Count) {
                     return Tables[TableIndex];
                 }
@@ -98,7 +105,7 @@ namespace ExtractorSharp.Core.Model {
         /// <summary>
         ///     色表
         /// </summary>
-        public List<List<Color>> Tables { set; get; } = new List<List<Color>> {new List<Color>()};
+        public List<List<Color>> Tables { set; get; } = new List<List<Color>> { new List<Color>() };
 
 
         /// <summary>
@@ -109,8 +116,10 @@ namespace ExtractorSharp.Core.Model {
         /// <summary>
         ///     色表索引
         /// </summary>
-        public int TableIndex {
-            set {
+        public int TableIndex
+        {
+            set
+            {
                 if (_tabindex != value) {
                     Refresh();
                     _tabindex = Math.Min(value, Tables.Count - 1);
@@ -119,12 +128,15 @@ namespace ExtractorSharp.Core.Model {
             get => _tabindex;
         }
 
-        public Sprite this[int index] {
+        public Sprite this[int index]
+        {
             get => List[index];
-            set {
+            set
+            {
                 if (index < List.Count) {
                     List[index] = value;
-                } else {
+                }
+                else {
                     List.Add(value);
                 }
             }
@@ -194,7 +206,7 @@ namespace ExtractorSharp.Core.Model {
         public void Hide() {
             var count = List.Count;
             List.Clear();
-            Tables = new List<List<Color>> {new List<Color>()};
+            Tables = new List<List<Color>> { new List<Color>() };
             TableIndex = 0;
             ConvertTo(ImgVersion.Ver2);
             NewImage(count, ColorBits.LINK, -1);
@@ -202,7 +214,7 @@ namespace ExtractorSharp.Core.Model {
 
         public Album Clone() {
             Adjust();
-            var temp=NpkCoder.ReadImg(Data, Path);
+            var temp = NpkCoder.ReadImg(Data, Path);
             temp.TableIndex = TableIndex;
             return temp;
         }
@@ -278,6 +290,19 @@ namespace ExtractorSharp.Core.Model {
 
         public IEnumerator<Sprite> GetEnumerator() {
             return List.GetEnumerator();
+        }
+
+        public void LoadImage(string file) {
+            if (List.Count > 0) return;
+            using (var stream = File.OpenRead(file)) {
+                NpkCoder.ReadImg(stream, this, this.Length);
+            }
+            Debug.Log("load image: " + this.Name);
+        }
+        public void UnloadImage(){
+            List.Clear();
+            GC.Collect();
+            Debug.Log("unload image: " + this.Name);
         }
     }
 }

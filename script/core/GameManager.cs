@@ -26,7 +26,7 @@ namespace Core
             // Log the exception, display it, etc
             var msg = e.ExceptionObject is GameException ? (e.ExceptionObject as GameException).Message : ((e.ExceptionObject as Exception).Message + "\n" +
                 (e.ExceptionObject as Exception).StackTrace);
-            if (!OS.IsDebugBuild())
+            //if (!OS.IsDebugBuild())
                 System.Diagnostics.Process.Start(OS.GetExecutablePath(), "scene/error/error.tscn \"" + msg + "\"");
             Debug.LogError(msg);
         }
@@ -34,7 +34,7 @@ namespace Core
         Node coreNode;
         public string ExePath { get; } = OS.GetExecutablePath();
         public string CodePath { get; } = System.Reflection.Assembly.GetExecutingAssembly().Location;
-        public string PrjPath { get; } = System.Reflection.Assembly.GetExecutingAssembly().Location.GetLastStringOf('/', 5);
+        public string PrjPath { get; private set; }
         public override void _EnterTree() {
             if (Instance != null) {
                 Debug.LogError("there is a GameManager in scene.");
@@ -46,6 +46,10 @@ namespace Core
             Debug.Log(nameof(GameManager) + " start");
             Debug.Log("godot path: " + ExePath);
             Debug.Log("code path: " + CodePath);
+            if (OS.HasFeature("standalone"))
+                PrjPath =System.IO.Path.GetDirectoryName(ExePath) + "/";
+            else
+                PrjPath = System.Reflection.Assembly.GetExecutingAssembly().Location.GetLastStringOf('/', 5);
             Debug.Log("project path: " + PrjPath);
 
             // add modules
