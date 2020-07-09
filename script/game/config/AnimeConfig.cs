@@ -134,8 +134,6 @@ namespace Game.Config
     }
     public class AnimeConfig : ResConfig
     {
-        public static readonly string _type = "ani";
-        public override string type => _type;
         public bool Loop { get; private set; }
         public bool Shadow { get; private set; } = true;
         public bool Coord;
@@ -143,13 +141,12 @@ namespace Game.Config
 
         public AnimeFrame[] Frames { get; private set; }
         public Spectrum Spectrum { get; private set; }
-        string current_key = "";
-        byte current_frame_idx = 0;
-        System.IO.StreamReader current_reader;
-        public override void Parse2(System.IO.StreamReader reader, ref string line) {
+        IConfigSource current_reader;
+        public override void Parse(IConfigSource reader) {
+            string current_key = "";
             current_reader = reader;
-            while (!reader.EndOfStream) {
-                line = reader.ReadLine().Trim();
+            while (reader.MoveNext()) {
+                var line = reader.Line.Trim();
                 if (string.IsNullOrEmpty(line))
                     continue;
                 else if (line[0] == '#') // comment
@@ -161,12 +158,12 @@ namespace Game.Config
 
                 // is frame ?
                 if (current_key.StartsWith("FRAME") && current_key != "FRAME MAX")
-                    current_frame_idx = (byte)current_key.ToInt();
+                    current_frame = Frames[current_key.ToInt()];
                 else if (current_key == "LOOP START")
                     current_frame.LoopStart = true;
             }
         }
-        AnimeFrame current_frame => Frames[current_frame_idx];
+        AnimeFrame current_frame;
         // return true when need next line
         void parseData(string key, string line) {
             string nline = "";

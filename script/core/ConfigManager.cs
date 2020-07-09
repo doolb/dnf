@@ -31,12 +31,12 @@ namespace Core
             }
         }
         // load config
-        Dictionary<string, Dictionary<int, SampleConfig>> sampleConfigDatas = new Dictionary<string, Dictionary<int, SampleConfig>>();
+        Dictionary<Type, Dictionary<int, SampleConfig>> sampleConfigDatas = new Dictionary<Type, Dictionary<int, SampleConfig>>();
         public int Sample => sampleConfigDatas.Count;
-        Dictionary<string, Dictionary<string, FlatConfig>> flatConfigDatas = new Dictionary<string, Dictionary<string, FlatConfig>>();
+        Dictionary<Type, Dictionary<string, FlatConfig>> flatConfigDatas = new Dictionary<Type, Dictionary<string, FlatConfig>>();
         public int Flat => flatConfigDatas.Count;
-        Dictionary<string, Dictionary<string, ResConfig>> resConfigDatas = new Dictionary<string, Dictionary<string, ResConfig>>();
-        public Dictionary<string, Dictionary<string, ResConfig>> ResCfgs => resConfigDatas;
+        Dictionary<Type, Dictionary<string, ResConfig>> resConfigDatas = new Dictionary<Type, Dictionary<string, ResConfig>>();
+        public Dictionary<Type, Dictionary<string, ResConfig>> ResCfgs => resConfigDatas;
         public int Res => resConfigDatas.Count;
         public void LoadConfig(string name, IConfigLoader loader) {
             ResourceManager.Instance.Load("config/" + name, loader);
@@ -44,7 +44,7 @@ namespace Core
 
         // add config to dic
         public void Add(SampleConfig _config) {
-            var key = _config.type;
+            var key = _config.GetType();
             if (!sampleConfigDatas.ContainsKey(key)) {
                 var cfgs = new Dictionary<int, SampleConfig>();
                 cfgs.Add(_config.sid, _config);
@@ -64,7 +64,7 @@ namespace Core
             }
         }
         public void Add(FlatConfig _config) {
-            var key = _config.type;
+            var key = _config.GetType();
             if (!flatConfigDatas.ContainsKey(key)) {
                 var cfgs = new Dictionary<string, FlatConfig>();
                 cfgs.Add(_config.key, _config);
@@ -84,7 +84,7 @@ namespace Core
             }
         }
         public void AddRes(ResConfig _config) {
-            var key = _config.type;
+            var key = _config.GetType();
             if (!resConfigDatas.ContainsKey(key)) {
                 var cfgs = new Dictionary<string, ResConfig>();
                 cfgs.Add(_config.key, _config);
@@ -104,7 +104,8 @@ namespace Core
             }
         }
         // get sample config by sid
-        public T Get<T>(string type, int sid) where T : SampleConfig {
+        public T Get<T>(int sid) where T : SampleConfig {
+            var type = typeof(T);
             if (!sampleConfigDatas.ContainsKey(type)) {
                 Debug.LogWarning($"config no found: {type}");
                 return null;
@@ -117,7 +118,8 @@ namespace Core
             return (T)cfgs[sid];
         }
         // get flat config by key
-        public T Get<T>(string type, string key) where T : FlatConfig {
+        public T Get<T>(string key) where T : FlatConfig {
+            var type = typeof(T);
             if (!flatConfigDatas.ContainsKey(type)) {
                 Debug.LogWarning($"config no found: {type}");
                 return null;
@@ -130,7 +132,8 @@ namespace Core
             return (T)cfgs[key];
         }
         // get res config by key
-        public T GetRes<T>(string type, string key) where T : ResConfig {
+        public T GetRes<T>(string key) where T : ResConfig {
+            var type = typeof(T);
             if (resConfigDatas.ContainsKey(type)) {
                 var cfgs = resConfigDatas[type];
                 if (cfgs.ContainsKey(key)) {
@@ -148,8 +151,8 @@ namespace Core
             return (T)resConfigDatas[type][key];
         }
         public void UnloadRes(ResConfig res) {
-            if(!res.isinit) return;
-            var type = res.type;
+            if (!res.isinit) return;
+            var type = res.GetType();
             var key = res.key;
             if (resConfigDatas.ContainsKey(type)) {
                 var cfgs = resConfigDatas[type];
@@ -163,27 +166,26 @@ namespace Core
     #region config base
     public interface IConfig
     {
-        string type { get; }
-        void Parse(string data);
-        void Parse2(System.IO.StreamReader reader, ref string line);
+        void Parse(IConfigSource data);
     }
     // sample config
     // unique by sid
     public abstract class SampleConfig : IConfig
     {
-        public abstract string type { get; }
         public int sid { get; private set; }
-        public virtual void Parse(string data) { }
-        public virtual void Parse2(System.IO.StreamReader reader, ref string line) { }
+        public int Sid
+        {
+            get => sid;
+            set => sid = value;
+        }
+        public virtual void Parse(IConfigSource data) { }
     }
     // flat config
     // unique by string
     public abstract class FlatConfig : IConfig
     {
-        public abstract string type { get; }
         public string key { get; /*private*/ set; }
-        public virtual void Parse(string data) { }
-        public virtual void Parse2(System.IO.StreamReader reader, ref string line) { }
+        public virtual void Parse(IConfigSource data) { }
     }
     public abstract class ResConfig : FlatConfig
     {
@@ -195,6 +197,75 @@ namespace Core
     public interface IConfigLoader
     {
         bool _loadOK(string file);
+    }
+    #endregion
+
+    #region config source
+    // specify the source we parse config from
+    // can be a string
+    // or a stream
+    public interface IConfigSource : System.Collections.IEnumerator
+    {
+        int LineIdx { get; } // current line number, from 1 base
+        string Line { get; } // current line data
+        string ReadLine();   // get next line
+    }
+    public class StringConfigSource : IConfigSource
+    {
+        protected string data;
+        public StringConfigSource(string @data) {
+            this.data = @data;
+        }
+        public int LineIdx { get; private set; }
+        public string Line { get; private set; }
+
+        public object Current => throw new NotImplementedException();
+
+        public bool MoveNext() {
+            throw new NotImplementedException();
+        }
+
+        public string ReadLine() {
+            throw new NotImplementedException();
+        }
+
+        public void Reset() {
+            throw new NotImplementedException();
+        }
+    }
+    public class StreamConfigSource : IConfigSource
+    {
+        private System.IO.StreamReader @stream;
+        public StreamConfigSource(System.IO.StreamReader @stream) {
+            this.stream = stream;
+            if (stream == null)
+                Debug.LogError("stream is null");
+        }
+
+        public int LineIdx { get; private set; }
+        public string Line { get; private set; }
+
+        public object Current => Line;
+
+        public bool MoveNext() {
+            if (!stream.EndOfStream) {
+                LineIdx++;
+                Line = stream.ReadLine();
+                return true;
+            }
+            return false;
+        }
+
+        public string ReadLine() {
+            if (MoveNext())
+                return Line;
+            throw new IndexOutOfRangeException("reach the end of data!");
+        }
+
+        public void Reset() {
+            LineIdx = 0;
+            stream.BaseStream.Position = 0;
+        }
     }
     #endregion
 }

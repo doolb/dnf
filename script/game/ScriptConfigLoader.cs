@@ -55,26 +55,10 @@ namespace Game
             SysZipLoader.LoadFile(path, (@z) =>
             {
                 ResourceManager.Instance.LoadBaseConfig(@z);
-                foreach (var entry in @z.Entries) {
-                    // skip empty file and directory
-                    if (entry.Length == 0 || string.IsNullOrEmpty(entry.Name))
-                        continue;
-                    totalCount++;
-                    var ext = System.IO.Path.GetExtension(entry.Name);
-                    if (configType.ContainsKey(ext))
-                        parseConfig(entry, configType[ext]);
-                    else if (flatConfigType.ContainsKey(ext))
-                        parseConfig(entry, flatConfigType[ext]);
-                    else if (resConfigType.ContainsKey(ext))
-                        parseRes(entry, resConfigType[ext]);
-                    //Debug.Log(entry.FullName);
-                    //yield return new WaitForFrame(1);
-                    //using (var open = new System.IO.StreamReader(entry.Open())) {
-                    //    //var txt = open.ReadToEnd();
-                    //    //txt.log();
-                    //}
-                }
+                totalCount += loadAllConfig(z, totalCount);
 
+                totalCount += loadLanguage(z, parseList(z.GetEntry("n_string.lst")));
+                totalCount += loadCharacter(z, parseList(z.GetEntry("n_string.lst")));
                 Debug.Log($"zip file count : {totalCount}");
                 Debug.Log($"finish load: {path} {GC.GetTotalMemory(true)}");
                 Debug.Log($"sample: {ConfigManager.Instance.Sample} flat: {ConfigManager.Instance.Flat} res: {ConfigManager.Instance.Res}");
@@ -95,6 +79,49 @@ namespace Game
             return ok;
         }
 
+        private int loadAllConfig(ZipArchive z, int totalCount) {
+            foreach (var entry in @z.Entries) {
+                // skip empty file and directory
+                if (entry.Length == 0 || string.IsNullOrEmpty(entry.Name))
+                    continue;
+                totalCount++;
+                var ext = System.IO.Path.GetExtension(entry.Name);
+                if (configType.ContainsKey(ext))
+                    parseConfig(entry, configType[ext]);
+                else if (flatConfigType.ContainsKey(ext))
+                    parseConfig(entry, flatConfigType[ext]);
+                else if (resConfigType.ContainsKey(ext))
+                    parseRes(entry, resConfigType[ext]);
+                //Debug.Log(entry.FullName);
+                //yield return new WaitForFrame(1);
+                //using (var open = new System.IO.StreamReader(entry.Open())) {
+                //    //var txt = open.ReadToEnd();
+                //    //txt.log();
+                //}
+            }
+
+            return totalCount;
+        }
+
+        private int loadLanguage(ZipArchive @zip, Dictionary<int, string> lst) {
+            int @langCount = 0;
+            foreach (var f in lst) {
+                using (var reader = getFile(zip, f.Value)) {
+                    if (reader != null)
+                        langCount += Language.Instance.ParseLanguage(f.Key, reader);
+                }
+            }
+            Debug.Log($"load Lang : {lst.Count} {langCount} {GC.GetTotalMemory(true)}");
+            return langCount;
+        }
+        private int loadCharacter(ZipArchive @zip, Dictionary<int, string> lst) {
+            int @charCount = 0;
+            foreach (var f in lst) {
+                parseConfig(zip.GetEntry(f.Value), typeof(Config.Character.Config), f.Key);
+            }
+            return charCount;
+        }
+
         static readonly Dictionary<string, Type> configType = new Dictionary<string, Type>()
         {
             //[".ani"] = typeof(Game.Config.AnimeConfig),
@@ -108,13 +135,12 @@ namespace Game
             [".ani"] = typeof(Game.Config.AnimeConfig),
         };
 
-        public static void parseConfig(ZipArchiveEntry entry, Type type) {
-            string current_line = "";
+        public static void parseConfig(ZipArchiveEntry entry, Type type, int sid = 0) {
             using (var open = new StreamReader(entry.Open())) {
-                // use read line for less memory ??
+                StreamConfigSource cfgSrc = new StreamConfigSource(open);
                 IConfig cfg = Activator.CreateInstance(type) as IConfig;
                 try {
-                    cfg.Parse2(open, ref current_line);
+                    cfg.Parse(cfgSrc);
                 }
                 catch (EnumException _ee) {
                     EnumExtension.missEnum[_ee.enumType][_ee.missEnum] = entry.FullName; // save file name
@@ -123,11 +149,13 @@ namespace Game
                     ConfigUtils.missConfig[type][_ce.Key][1] = entry.FullName; // save file name
                 }
                 catch (Exception _e) {
-                    var nmsg = $"parse config failed: {entry.FullName} {_e.Message}\n{current_line}\n{_e.StackTrace}";
+                    var nmsg = $"parse config failed: {entry.FullName} {_e.Message}\n{cfgSrc.Line}\n{_e.StackTrace}";
                     throw new GameException(nmsg);
                 }
                 if (type.IsSubclassOf(typeof(SampleConfig))) {
-                    ConfigManager.Instance.Add((SampleConfig)cfg);
+                    var samp = (SampleConfig)cfg;
+                    samp.Sid = sid;
+                    ConfigManager.Instance.Add(samp);
                 }
                 else if (type.IsSubclassOf(typeof(ResConfig))) {
                     var flat = cfg as ResConfig;
@@ -147,6 +175,34 @@ namespace Game
             ResConfig cfg = Activator.CreateInstance(type) as ResConfig;
             cfg.key = entry.FullName;
             ConfigManager.Instance.AddRes(cfg);
+        }
+
+        // parse the .lst file
+        private Dictionary<int, string> parseList(ZipArchiveEntry @entry) {
+            Dictionary<int, string> lst = new Dictionary<int, string>();
+            using (var open = new StreamReader(entry.Open())) {
+                while (!open.EndOfStream) {
+                    var line = open.ReadLine();
+                    if (string.IsNullOrEmpty(line) || line[0] == '#')
+                        continue;
+                    // id \n `path`
+                    if (line[0] != '`') {
+                        var id = line.ToInt();
+                        var path = open.ReadLine().RemoveQuotes().ToLower();
+                        lst.Add(id, path);
+                    }
+                }
+            }
+            return lst;
+        }
+        System.Text.Encoding Encoding = System.Text.Encoding.GetEncoding(950); // big 5
+        private StreamReader getFile(ZipArchive @zip, string path) {
+            var entry = zip.GetEntry(path);
+            if (entry == null) {
+                $"config file :{path} no found!".error();
+                return null;
+            }
+            return new StreamReader(entry.Open(), Encoding, true);
         }
     }
 }

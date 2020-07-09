@@ -41,7 +41,7 @@ public class test_npk_in_ani : Control
     ScrollList albumList;
     String[] npkKeys;
     void _show_npk_list() {
-        npkKeys = ConfigManager.Instance.ResCfgs[AnimeConfig._type].Keys.ToArray();
+        npkKeys = ConfigManager.Instance.ResCfgs[typeof(AnimeConfig)].Keys.ToArray();
         Debug.Log("anime config count: " + npkKeys.Length);
         albumList.Show(npkKeys.Length);
 
@@ -57,13 +57,13 @@ public class test_npk_in_ani : Control
     void _selectAlbum(ButtonBase<Button> _button) {
         selectAlbum = _button.Id;
         selectBtn = _button.VId;
-        var cfg = ConfigManager.Instance.GetRes<AnimeConfig>(AnimeConfig._type, npkKeys[selectAlbum]);
-        $"{_button.Id} {npkKeys[_button.Id]} {cfg.key} {cfg.type}".log();
+        var cfg = ConfigManager.Instance.GetRes<AnimeConfig>(npkKeys[selectAlbum]);
+        $"{_button.Id} {npkKeys[_button.Id]} {cfg.key}".log();
 
         spriteList.Clear();
         if (selectBtn > 0 && selectBtn != _button.VId) {
             buttons[selectBtn].target.Flat = false;
-            ConfigManager.Instance.UnloadRes(ConfigManager.Instance.GetRes<AnimeConfig>(AnimeConfig._type, npkKeys[buttons[selectBtn].Id]));
+            ConfigManager.Instance.UnloadRes(ConfigManager.Instance.GetRes<AnimeConfig>(npkKeys[buttons[selectBtn].Id]));
         }
         //albumList.ScrollIndex(selectAlbum, _button.Id);
 
@@ -76,7 +76,7 @@ public class test_npk_in_ani : Control
             setImage(0);
     }
     void setImage(int index) {
-        var cfg = ConfigManager.Instance.GetRes<AnimeConfig>(AnimeConfig._type, npkKeys[selectAlbum]);
+        var cfg = ConfigManager.Instance.GetRes<AnimeConfig>(npkKeys[selectAlbum]);
         if (!ResourceManager.Instance.allNpkData.ContainsKey(cfg.Frames[index].Image))
             return;
         var album = ResourceManager.Instance.allNpkData[cfg.Frames[index].Image].album;

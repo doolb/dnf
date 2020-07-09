@@ -95,7 +95,7 @@ namespace UI
                 OnItemShow((Control)panel.GetChild(idx), i, idx - 1);
             }
 
-            EditorDescription = $"{startIndex} {endIndex} {firstIndex} {base.GetHScroll()} {base.GetVScroll()}";
+            EditorDescription = $"{startIndex} {endIndex} {firstIndex} {base.ScrollHorizontal} {base.ScrollVertical}";
         }
     }
 }
