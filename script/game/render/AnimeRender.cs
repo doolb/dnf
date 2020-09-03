@@ -54,6 +54,10 @@ namespace Game.Render
                 if (npk.album.List[idx].Picture is GodotTexture godotText) {
                     tex.CreateFromImage(godotText.Image);
                 }
+
+                Debug.Log($"GraphicEffect : {Data.Frames[animeIndex].GraphicEffect}");
+                ((ShaderMaterial)Material).SetShaderParam("graphicEffect", Data.Frames[animeIndex].GraphicEffect);
+
                 Texture = tex;
             }
         }

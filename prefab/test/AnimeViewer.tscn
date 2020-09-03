@@ -1,6 +1,8 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=10 format=2]
 
 [ext_resource path="res://script/ui/ScrollList.cs" type="Script" id=1]
+[ext_resource path="res://script/game/render/AnimeRender.cs" type="Script" id=2]
+[ext_resource path="res://shader/anime.tres" type="Material" id=3]
 
 [sub_resource type="StyleBoxEmpty" id=1]
 
@@ -27,9 +29,10 @@ HScrollBar/styles/scroll_focus = SubResource( 5 )
 anchor_left = 0.014
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = -0.0640001
-margin_right = 40.0
-margin_bottom = -8.0
+margin_left = -13.0148
+margin_top = -2.15851
+margin_right = 27.0492
+margin_bottom = -10.1585
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -43,14 +46,16 @@ margin_bottom = 96.0
 text = "open file"
 
 [node name="image" type="TextureRect" parent="."]
+material = ExtResource( 3 )
 anchor_left = 0.417
 anchor_top = 0.339
 anchor_right = 1.778
 anchor_bottom = 1.321
-margin_left = -124.009
-margin_top = 271.312
-margin_right = -107.945
-margin_bottom = 263.376
+margin_left = 41.2634
+margin_top = -13.688
+margin_right = -867.416
+margin_bottom = -378.032
+script = ExtResource( 2 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -82,8 +87,6 @@ __meta__ = {
 }
 
 [node name="panel" type="VBoxContainer" parent="albumList"]
-anchor_right = 1.0
-anchor_bottom = 1.0
 mouse_filter = 0
 alignment = 1
 
@@ -92,10 +95,10 @@ anchor_left = 0.403
 anchor_top = 0.161
 anchor_right = 1.0
 anchor_bottom = 0.732
-margin_left = -93.3124
-margin_top = 48.688
-margin_right = -109.184
-margin_bottom = -143.12
+margin_left = -101.04
+margin_top = 43.688
+margin_right = -48.728
+margin_bottom = -148.344
 __meta__ = {
 "_edit_use_anchors_": false
 }
