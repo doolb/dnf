@@ -1,1 +1,1 @@
-res="D:/Program Files (x86)/Steam/steamapps/common/wallpaper_engine/projects/myprojects/extractorsharp"
+res="../dnf-res"

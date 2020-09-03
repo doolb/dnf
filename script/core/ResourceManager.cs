@@ -1,4 +1,5 @@
 using ExtractorSharp.Core.Coder;
+using Game.Config;
 using Godot;
 using IniParser.Model;
 using System;
@@ -178,6 +179,63 @@ namespace Core
         public ZipArchive baseConfigs { get; private set; }
         public void LoadBaseConfig(ZipArchive @z) {
             baseConfigs = @z;
+        }
+        #endregion
+
+        #region album
+        public class ResUsage
+        {
+            public uint nowCount;
+            public uint allCount;
+            public bool cache;
+            public float lastTime;
+            //public uint stayInMem;
+        }
+        private Dictionary<string, ResUsage> resCache = new Dictionary<string, ResUsage>();
+
+        public void LoadAnime(AnimeConfig config) {
+            for (int i = 0; i < config.Frames.Length; i++) {
+                if (!ResourceManager.Instance.allNpkData.ContainsKey(config.Frames[i].Image))
+                    return;
+                var npk = ResourceManager.Instance.allNpkData[config.Frames[i].Image];
+                var sprite = config.Frames[i].ImageIdx;
+
+                if (!resCache.ContainsKey(npk.filePath))
+                    resCache.Add(npk.filePath, new ResUsage());
+                var usage = resCache[npk.filePath];
+                if (!usage.cache && check_memory()) {
+                    npk.album.LoadImage(npk.filePath);
+
+                    //usage.stayInMem += stayInMem ? 1 : 0;
+                    usage.nowCount++;
+                    usage.allCount++;
+                    usage.cache = true;
+                    usage.lastTime = Time.time;
+                }
+            }
+        }
+
+        public void UnloadAnime(AnimeConfig config) {
+            for (int i = 0; i < config.Frames.Length; i++) {
+                if (!ResourceManager.Instance.allNpkData.ContainsKey(config.Frames[i].Image))
+                    return;
+                var npk = ResourceManager.Instance.allNpkData[config.Frames[i].Image];
+                var sprite = config.Frames[i].ImageIdx;
+
+                if (!resCache.ContainsKey(npk.filePath))
+                    resCache.Add(npk.filePath, new ResUsage());
+                var usage = resCache[npk.filePath];
+                if (usage.cache) {
+                    npk.album.UnloadImage();
+                    //usage.stayInMem -= stayInMem ? 1 : 0;
+                    usage.nowCount--;
+                    usage.cache = false;
+                }
+            }
+        }
+
+        public bool check_memory() {
+            return true;
         }
         #endregion
     }

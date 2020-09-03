@@ -9,14 +9,16 @@ namespace Game
     {
         public override void _EnterTree() {
             Name = nameof(Main);
+
+            log_file = open_log_file();
+            Debug.OnDebugCallback += on_debug_msg;
+
             Debug.Log(nameof(Main) + " start");
             LoadCfg(EditorDescription);
 
             Coroutine.Instance.StartOnTask(() => ResourceManager.Instance.LoadNpkHeader());
             ConfigManager.Instance.LoadConfig("config.zip", new ScriptConfigLoader());
 
-            log_file = open_log_file();
-            Debug.OnDebugCallback += on_debug_msg;
         }
 
         public override void _ExitTree() {

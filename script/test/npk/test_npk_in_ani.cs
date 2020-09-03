@@ -1,20 +1,18 @@
 using Core;
-using ExtractorSharp.Core.Coder;
-using ExtractorSharp.Core.Model;
 using Godot;
 using UI;
 using System;
-using ExtractorSharp.Core;
 using System.Collections.Generic;
 using System.Linq;
 using Game.Config;
+using Game.Render;
 
 public class test_npk_in_ani : Control
 {
-    TextureRect image;
+    AnimeRender image;
     List<ButtonBase<Button>> buttons = new List<UI.ButtonBase<Button>>();
     public override void _Ready() {
-        image = GetNode(nameof(image)) as TextureRect;
+        image = GetNode(nameof(image)) as AnimeRender;
         albumList = GetNode(nameof(albumList)) as ScrollList;
         spriteList = GetNode(nameof(spriteList)) as ItemList;
         spriteList.Connect("item_selected", this, nameof(setImage));
@@ -52,7 +50,6 @@ public class test_npk_in_ani : Control
     }
     int selectAlbum = -1;
     int selectBtn = -1;
-    int selectSprite;
     ItemList spriteList;
     void _selectAlbum(ButtonBase<Button> _button) {
         selectAlbum = _button.Id;
@@ -77,18 +74,6 @@ public class test_npk_in_ani : Control
     }
     void setImage(int index) {
         var cfg = ConfigManager.Instance.GetRes<AnimeConfig>(npkKeys[selectAlbum]);
-        if (!ResourceManager.Instance.allNpkData.ContainsKey(cfg.Frames[index].Image))
-            return;
-        var album = ResourceManager.Instance.allNpkData[cfg.Frames[index].Image].album;
-        selectSprite = cfg.Frames[index].ImageIdx; // Mathf.Min(index, album.List.Count);
-        image.Texture?.Dispose();
-        ImageTexture tex = new ImageTexture();
-        Debug.Log($"select : {album.Path} {selectAlbum} {selectSprite}");
-        album.LoadImage(ResourceManager.Instance.allNpkData[cfg.Frames[index].Image].filePath);
-        var godotText = album.List[selectSprite].Picture as GodotTexture;
-        if (godotText != null) {
-            tex.CreateFromImage(godotText.Image);
-        }
-        image.Texture = tex;
+        image.Show(cfg, index);
     }
 }
