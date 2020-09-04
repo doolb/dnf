@@ -5,7 +5,8 @@ using Godot;
 
 namespace Game.Render
 {
-    public class AnimeRender : Godot.TextureRect
+    // anime render for 2d sprite
+    public class AnimeSprite : Godot.Sprite
     {
         public float animeTime;
         public int animeIndex;

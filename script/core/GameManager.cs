@@ -59,6 +59,7 @@ namespace Core
             addModule(new Coroutine(), coreNode);
             addModule(new ResourceManager(), coreNode);
             addModule(new ConfigManager(), coreNode);
+            addModule(new SceneManager(), coreNode);
         }
 
         internal void addModule(Node ins, Node parent) {

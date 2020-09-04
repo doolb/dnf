@@ -9,10 +9,10 @@ using Game.Render;
 
 public class test_npk_in_ani : Control
 {
-    AnimeRender image;
+    AnimeRect image;
     List<ButtonBase<Button>> buttons = new List<UI.ButtonBase<Button>>();
     public override void _Ready() {
-        image = GetNode(nameof(image)) as AnimeRender;
+        image = GetNode(nameof(image)) as AnimeRect;
         albumList = GetNode(nameof(albumList)) as ScrollList;
         spriteList = GetNode(nameof(spriteList)) as ItemList;
         spriteList.Connect("item_selected", this, nameof(setImage));
@@ -72,8 +72,22 @@ public class test_npk_in_ani : Control
         if (album.Length > 0)
             setImage(0);
     }
-    void setImage(int index) {
+
+    // use texutrerect
+    void setImage_on_image(int index) {
         var cfg = ConfigManager.Instance.GetRes<AnimeConfig>(npkKeys[selectAlbum]);
         image.Show(cfg, index);
+    }
+
+
+    SceneObject sobj;
+    // use scene object
+    void setImage(int index) {
+        if(sobj == null){
+            sobj = new SceneObject();
+            SceneManager.Instance.AddObject(sobj);
+        }
+        sobj.anime = npkKeys[selectAlbum];
+        SceneManager.Instance.UpdateObject(sobj);
     }
 }
